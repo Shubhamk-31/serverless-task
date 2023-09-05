@@ -2,10 +2,18 @@ const AWS = require('aws-sdk');
 const dynamoDB = new AWS.DynamoDB.DocumentClient();
 
 // Delete a Product
-module.exports.handler = async (event) => {
+module.exports.handler = async (event,callback,context) => {
   const path = +event.pathParameters.id;
   try {
     const requestBody = JSON.parse(event.body);
+
+    const productExist = await checkProductExist(path);
+    if(productExist) {
+      return {
+        statusCode: 500,
+      body: JSON.stringify({ message: 'Product Not Found' }),
+      }
+    }
     const params = {
       TableName: 'product',
       Key: {
@@ -27,3 +35,27 @@ module.exports.handler = async (event) => {
     };
   }
 };
+
+async function checkProductExist(id) {
+  try{
+    const params = {
+      TableName: 'product',
+      FilterExpression: 'id = :id',
+      ExpressionAttributeValues: {
+        ':id': id, 
+    }
+  };
+    const result = await dynamoDB.scan(params).promise();
+    if(result.Items.length == 0) {
+      return true
+    } else {
+      return false
+    }
+  }catch (error) {
+    console.error('Product:', error);
+    return {
+      statusCode: 500,
+      body: JSON.stringify({ error: 'Could not delete Product' }),
+    };
+  }
+}

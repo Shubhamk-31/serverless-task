@@ -8,34 +8,38 @@ module.exports.handler = async (event) => {
     const requestBody = JSON.parse(event.body);
     const schema = Joi.object({
       name: Joi.string().required(),
-      desccription: Joi.string().required(),
+      description: Joi.string().required(),
     });
     const path = +event.pathParameters.id;
-    console.log(1112223444);
-    console.log(path);
     const validate = await checkValidate(schema, requestBody);
     if (validate.statusCode == 400) {
       return {
         statusCode: 500,
-        body: JSON.stringify({ error: 'Could not create Product' }),
+        body: JSON.stringify({ error: validate?.body }),
       };
     }
+    const productExist = await checkProductExist(path);
+    if(productExist) {
+      return {
+        statusCode: 500,
+      body: JSON.stringify({ message: 'Product Not Found' }),
+      }
+    }
     const params = {
-      TableName: 'product', // Replace with your DynamoDB table name
+      TableName: 'product',
       Key: {
         id: path,
       },
-      UpdateExpression: 'SET #name = :nameValue, #description = :descriptionValue', // Update name and description
+      UpdateExpression: 'SET #name = :nameValue, #description = :descriptionValue', 
       ExpressionAttributeNames: {
-        '#name': 'name', // Map '#name' to 'name' attribute
-        '#description': 'description', // Map '#description' to 'description' attribute
+        '#name': 'name', 
+        '#description': 'description', 
       },
       ExpressionAttributeValues: {
-        ':nameValue': requestBody.name, // Replace with the new name value
-        ':descriptionValue': requestBody.description, // Replace with the new description value
+        ':nameValue': requestBody.name, 
+        ':descriptionValue': requestBody.description, 
       },
     };
-    console.log(params);
     await dynamoDB.update(params).promise();
 
     return {
@@ -52,12 +56,12 @@ module.exports.handler = async (event) => {
 }
 async function checkValidate(schema, body) {
   try {
-    const validate = schema.validate(body);
+    const {error} = schema.validate(body);
 
-    if (validate.error) {
+    if (error) {
       return {
         statusCode: 400,
-        body: JSON.stringify({ error: error.details[0].message }),
+        body: JSON.stringify(error.details[0].message ),
       };
     }
     return {
@@ -68,6 +72,30 @@ async function checkValidate(schema, body) {
     return {
       statusCode: 500,
       body: JSON.stringify({ error: 'Could not create Product' }),
+    };
+  }
+}
+
+async function checkProductExist(id) {
+  try{
+    const params = {
+      TableName: 'product',
+      FilterExpression: 'id = :id',
+      ExpressionAttributeValues: {
+        ':id': id, 
+    }
+  };
+    const result = await dynamoDB.scan(params).promise();
+    if(result.Items.length == 0) {
+      return true
+    } else {
+      return false
+    }
+  }catch (error) {
+    console.error('Product:', error);
+    return {
+      statusCode: 500,
+      body: JSON.stringify({ error: 'Could not delete Product' }),
     };
   }
 }

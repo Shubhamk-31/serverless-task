@@ -8,14 +8,14 @@ module.exports.handler = async (event) => {
     const id = new Date().getTime()
     const schema = Joi.object({
       name: Joi.string().required(),
-      desccription: Joi.string().required(),
+      description: Joi.string().required(),
     });
     const requestBody = JSON.parse(event.body);
     const validate = await checkValidate(schema, requestBody)
     if (validate.statusCode == 400) {
       return {
         statusCode: 500,
-        body: JSON.stringify({ error: 'Could not create Product' }),
+        body: JSON.stringify({ error: validate.body }),
       };
     }
     const params = {
@@ -38,12 +38,11 @@ module.exports.handler = async (event) => {
 
 async function checkValidate(schema, body) {
   try {
-    const validate = schema.validate(body);
-
-    if (validate.error) {
+    const {error } = schema.validate(body);
+    if (error) {
       return {
         statusCode: 400,
-        body: JSON.stringify({ error: error.details[0].message }),
+        body:  error.details[0].message,
       };
     }
     return {

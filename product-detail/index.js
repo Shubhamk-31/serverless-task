@@ -20,8 +20,8 @@ module.exports.handler = async (event) => {
       };
     } else {
       return {
-        statusCode: 200,
-        body: JSON.stringify("Product not Found"),
+        statusCode: 500,
+        body: JSON.stringify({message:"Product not Found"}),
       };
     }
     
