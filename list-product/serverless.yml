@@ -1,0 +1,15 @@
+service: list-product
+frameworkVersion: '3'
+
+provider:
+  name: aws
+  runtime: nodejs18.x
+
+functions:
+  getProducts:
+    handler: index.handler
+    events:
+      - http:
+          path: product
+          method: get
+

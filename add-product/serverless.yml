@@ -1,0 +1,16 @@
+service: 'add-product'
+frameworkVersion: '3'
+
+provider:
+  name: aws
+  runtime: nodejs18.x
+
+functions:
+  createProduct:
+    handler: index.handler
+    events:
+      - http:
+          path: product
+          method: post
+
+

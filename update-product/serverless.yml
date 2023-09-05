@@ -1,0 +1,14 @@
+service: product-update
+frameworkVersion: '3'
+
+provider:
+  name: aws
+  runtime: nodejs18.x
+
+functions:
+  updateProduct:
+    handler: index.handler
+    events:
+      - http:
+          path: product/{id}
+          method: put

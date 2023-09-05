@@ -1,0 +1,15 @@
+service: product-detail
+frameworkVersion: '3'
+
+provider:
+  name: aws
+  runtime: nodejs18.x
+
+functions:
+  productDetail:
+    handler: index.handler
+    events:
+      - http:
+          path: product/{id}
+          method: get
+
