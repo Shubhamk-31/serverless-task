@@ -16,3 +16,5 @@ I have used the serverless framework as described the Task
 DynamoDB is used as DataBase
 
 Code can be deployed By going into each function Directory, making changes as required and Run the command "serverless Deploy"
+
+Initially I am not sharing my secret required for AWS. BUt if you require, please update
